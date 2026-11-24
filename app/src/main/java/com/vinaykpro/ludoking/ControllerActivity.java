@@ -196,3 +196,4 @@ public class ControllerActivity extends android.app.Activity {
         } catch (Exception ignored) {}
         super.onDestroy();
     }
+}
