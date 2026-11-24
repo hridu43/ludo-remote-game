@@ -131,7 +131,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
         Objects.requireNonNull(getSupportActionBar()).hide();
         initViews();
-        addRemoteControllerButton();
+        new Handler().postDelayed(() -> addRemoteControllerButton(), 800);
         View v = findViewById(R.id.homebackgroundview);
         ConstraintLayout.LayoutParams bgparams = new ConstraintLayout.LayoutParams((int)pxWidth,(int)(pxHeight+getStatusBarHeight()+60));
         v.setLayoutParams(bgparams);
@@ -1986,31 +1986,31 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void addRemoteControllerButton() {
-        androidx.constraintlayout.widget.ConstraintLayout root =
-                findViewById(R.id.root);
+        ConstraintLayout root = findViewById(R.id.root);
         if (root == null) return;
 
         android.widget.Button button = new android.widget.Button(this);
         button.setText("🎮 Controller Mode");
-        button.setTextSize(13);
         button.setTextColor(android.graphics.Color.WHITE);
+        button.setTextSize(14);
         button.setAllCaps(false);
-        button.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        android.graphics.Color.rgb(25, 65, 145)));
+        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                android.graphics.Color.rgb(18, 75, 165)));
 
-        androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
-                new androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
-        lp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
-        lp.setMargins(0, 0, 16, 110);
+        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        lp.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        lp.topMargin = (int)(190 * getResources().getDisplayMetrics().density);
+        lp.rightMargin = (int)(12 * getResources().getDisplayMetrics().density);
+
         root.addView(button, lp);
+        button.setElevation(1000f);
+        button.bringToFront();
 
-        button.setOnClickListener(v ->
-                startActivity(new android.content.Intent(
-                        HomeActivity.this, ControllerActivity.class)));
+        button.setOnClickListener(v -> startActivity(
+                new Intent(HomeActivity.this, ControllerActivity.class)));
     }
 
     private void initViews() {
