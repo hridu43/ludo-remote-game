@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
     static  int currentPlayerPosition = 3;
 
     static int currentPlayerDice = 6;
+    static int[] remoteDiceOverrides = {0,0,0,0};
 
     int currentPlayerIndex = 0;
 
@@ -181,17 +182,34 @@ public class MainActivity extends AppCompatActivity {
                     String path = request.split(" ")[1];
                     String query = path.substring(path.indexOf("?") + 1);
                     String command = "";
-                    int index = 0;
+                    int index = 0, player = -1, value = 0;
 
                     for (String part : query.split("&")) {
                         String[] pair = part.split("=", 2);
                         if (pair.length == 2) {
                             if (pair[0].equals("cmd")) command = pair[1];
                             if (pair[0].equals("index")) index = Integer.parseInt(pair[1]);
+                            if (pair[0].equals("player")) player = Integer.parseInt(pair[1]);
+                            if (pair[0].equals("value")) value = Integer.parseInt(pair[1]);
                         }
                     }
 
                     final int pieceIndex = index;
+                    final int selectedPlayer = player;
+                    final int selectedValue = value;
+
+                    if (command.equals("setdice")) {
+                        runOnUiThread(() -> {
+                            if (selectedPlayer >= 0 && selectedPlayer < players.size()
+                                    && selectedPlayer < 4
+                                    && selectedValue >= 1 && selectedValue <= 6) {
+                                remoteDiceOverrides[selectedPlayer] = selectedValue;
+                                Toast.makeText(MainActivity.this,
+                                    "Player " + (selectedPlayer + 1) + " next dice: " + selectedValue,
+                                    Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                     if (command.equals("roll")) {
                         runOnUiThread(() -> {
                             if (d != null && !d.isRolling && d.isDiceClickable) {
@@ -1419,6 +1437,15 @@ public class MainActivity extends AppCompatActivity {
                     int n = Integer.parseInt(number);
                     ch = n;
                 } catch (Exception e) {}
+
+                int activePlayerIndex = currentPlayerIndex == 0
+                        ? players.size() - 1 : currentPlayerIndex - 1;
+                if (activePlayerIndex >= 0 && activePlayerIndex < 4
+                        && remoteDiceOverrides[activePlayerIndex] >= 1
+                        && remoteDiceOverrides[activePlayerIndex] <= 6) {
+                    ch = remoteDiceOverrides[activePlayerIndex];
+                    remoteDiceOverrides[activePlayerIndex] = 0;
+                }
                 switch (ch) {
                     case 1:
                         mainDiceImageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.dice1, null));

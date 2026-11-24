@@ -14,22 +14,53 @@ public class ControllerActivity extends android.app.Activity {
     protected void onCreate(android.os.Bundle state) {
         super.onCreate(state);
 
-        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
-        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
-        layout.setGravity(android.view.Gravity.CENTER);
-        layout.setPadding(24, 30, 24, 30);
-        layout.setBackgroundColor(android.graphics.Color.rgb(23, 37, 84));
+        android.widget.LinearLayout root = new android.widget.LinearLayout(this);
+        root.setOrientation(1);
+        root.setPadding(14, 18, 14, 18);
+        root.setBackgroundColor(android.graphics.Color.rgb(23, 37, 84));
 
         status = new android.widget.TextView(this);
-        status.setTextColor(android.graphics.Color.WHITE);
-        status.setTextSize(18);
-        status.setGravity(android.view.Gravity.CENTER);
+        status.setTextColor(-1);
+        status.setTextSize(17);
+        status.setGravity(17);
         status.setText("Searching for Ludo game...");
-        layout.addView(status, new android.widget.LinearLayout.LayoutParams(-1, 90));
+        root.addView(status, new android.widget.LinearLayout.LayoutParams(-1, 65));
 
-        addButton(layout, "ROLL DICE", "roll", 24);
-        for (int i = 0; i < 4; i++)
-            addButton(layout, "MOVE PIECE " + (i + 1), "move&index=" + i, 18);
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        android.widget.LinearLayout rows = new android.widget.LinearLayout(this);
+        rows.setOrientation(1);
+
+        for (int player = 0; player < 4; player++) {
+            android.widget.TextView title = new android.widget.TextView(this);
+            title.setText("PLAYER " + (player + 1));
+            title.setTextColor(-1);
+            title.setTextSize(19);
+            title.setGravity(17);
+            title.setPadding(0, 16, 0, 5);
+            rows.addView(title);
+
+            android.widget.LinearLayout numbers = new android.widget.LinearLayout(this);
+            numbers.setOrientation(0);
+
+            for (int number = 1; number <= 6; number++) {
+                final int p = player;
+                final int n = number;
+                android.widget.Button b = new android.widget.Button(this);
+                b.setText(String.valueOf(number));
+                b.setTextSize(17);
+                android.widget.LinearLayout.LayoutParams lp =
+                        new android.widget.LinearLayout.LayoutParams(0, 58, 1);
+                lp.setMargins(2, 2, 2, 2);
+                numbers.addView(b, lp);
+                b.setOnClickListener(v ->
+                        sendCommand("setdice&player=" + p + "&value=" + n,
+                                "Player " + (p + 1) + " next dice = " + n));
+            }
+            rows.addView(numbers);
+        }
+
+        scroll.addView(rows);
+        root.addView(scroll, new android.widget.LinearLayout.LayoutParams(-1, 0, 1));
 
         android.widget.Button retry = new android.widget.Button(this);
         retry.setText("SEARCH AGAIN");
@@ -38,9 +69,9 @@ public class ControllerActivity extends android.app.Activity {
             resolving = false;
             startDiscovery();
         });
-        layout.addView(retry);
+        root.addView(retry);
 
-        setContentView(layout);
+        setContentView(root);
 
         android.net.wifi.WifiManager wifi =
                 (android.net.wifi.WifiManager) getApplicationContext()
@@ -61,21 +92,10 @@ public class ControllerActivity extends android.app.Activity {
         }
     }
 
-    private void addButton(android.widget.LinearLayout layout,
-                           String label, String command, int size) {
-        android.widget.Button b = new android.widget.Button(this);
-        b.setText(label);
-        b.setTextSize(size);
-        android.widget.LinearLayout.LayoutParams lp =
-                new android.widget.LinearLayout.LayoutParams(-1, -2);
-        lp.setMargins(0, 7, 0, 7);
-        layout.addView(b, lp);
-        b.setOnClickListener(v -> sendCommand(command));
-    }
-
     private void startDiscovery() {
         if (discovering) {
-            try { nsd.stopServiceDiscovery(discovery); } catch (Exception ignored) {}
+            try { nsd.stopServiceDiscovery(discovery); }
+            catch (Exception ignored) {}
             discovering = false;
         }
         host = null;
@@ -107,7 +127,7 @@ public class ControllerActivity extends android.app.Activity {
                                     android.net.nsd.NsdServiceInfo info) {
                                 host = info.getHost().getHostAddress();
                                 port = info.getPort();
-                                status.setText("CONNECTED to " + info.getServiceName());
+                                status.setText("CONNECTED • Select a number");
                                 try { nsd.stopServiceDiscovery(discovery); }
                                 catch (Exception ignored) {}
                                 discovering = false;
@@ -125,13 +145,13 @@ public class ControllerActivity extends android.app.Activity {
         }
     }
 
-    private void sendCommand(String command) {
+    private void sendCommand(String command, String successText) {
         final String address = host;
         if (address == null) {
-            status.setText("Game phone not found yet. Keep both phones on Wi-Fi.");
+            status.setText("Game phone not found. Keep both phones on Wi-Fi.");
             return;
         }
-        status.setText("Sending command...");
+        status.setText("Sending...");
         new Thread(() -> {
             java.net.HttpURLConnection connection = null;
             try {
@@ -142,7 +162,7 @@ public class ControllerActivity extends android.app.Activity {
                 connection.setReadTimeout(3000);
                 int code = connection.getResponseCode();
                 runOnUiThread(() -> status.setText(
-                        code == 200 ? "Command sent" : "Game phone error"));
+                        code == 200 ? successText : "Game phone error"));
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     status.setText("Connection lost. Tap SEARCH AGAIN.");
@@ -176,4 +196,3 @@ public class ControllerActivity extends android.app.Activity {
         } catch (Exception ignored) {}
         super.onDestroy();
     }
-}
