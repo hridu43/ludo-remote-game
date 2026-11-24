@@ -131,6 +131,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
         Objects.requireNonNull(getSupportActionBar()).hide();
         initViews();
+        addRemoteControllerButton();
         View v = findViewById(R.id.homebackgroundview);
         ConstraintLayout.LayoutParams bgparams = new ConstraintLayout.LayoutParams((int)pxWidth,(int)(pxHeight+getStatusBarHeight()+60));
         v.setLayoutParams(bgparams);
@@ -2004,7 +2005,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
         lp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
-        lp.setMargins(0, 0, 16, 20);
+        lp.setMargins(0, 0, 16, 110);
         root.addView(button, lp);
 
         button.setOnClickListener(v ->
