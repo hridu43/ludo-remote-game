@@ -1983,6 +1983,35 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    private void addRemoteControllerButton() {
+        androidx.constraintlayout.widget.ConstraintLayout root =
+                findViewById(R.id.root);
+        if (root == null) return;
+
+        android.widget.Button button = new android.widget.Button(this);
+        button.setText("🎮 Controller Mode");
+        button.setTextSize(13);
+        button.setTextColor(android.graphics.Color.WHITE);
+        button.setAllCaps(false);
+        button.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(
+                        android.graphics.Color.rgb(25, 65, 145)));
+
+        androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
+                new androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+        lp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+        lp.setMargins(0, 0, 16, 20);
+        root.addView(button, lp);
+
+        button.setOnClickListener(v ->
+                startActivity(new android.content.Intent(
+                        HomeActivity.this, ControllerActivity.class)));
+    }
+
     private void initViews() {
 
         sharedPreferences = getSharedPreferences("LudoModUser",MODE_PRIVATE);

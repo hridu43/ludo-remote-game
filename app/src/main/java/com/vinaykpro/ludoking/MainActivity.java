@@ -120,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         private java.net.ServerSocket remoteServerSocket;
+    private android.net.nsd.NsdManager remoteNsdManager;
+    private android.net.nsd.NsdManager.RegistrationListener remoteRegistrationListener;
         private Thread remoteServerThread;
 
         private void startRemoteServer() {
@@ -128,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
             remoteServerThread = new Thread(() -> {
                 try {
                     remoteServerSocket = new java.net.ServerSocket(8765);
+            runOnUiThread(() -> registerRemoteService());
                     String ip = "IP_NOT_FOUND";
                     try {
                         java.util.Enumeration<java.net.NetworkInterface> nets =
@@ -225,7 +228,41 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
+        private void registerRemoteService() {
+            try {
+                remoteNsdManager = (android.net.nsd.NsdManager)
+                        getSystemService(NSD_SERVICE);
+                android.net.nsd.NsdServiceInfo info =
+                        new android.net.nsd.NsdServiceInfo();
+                info.setServiceName("LudoRemote-" + android.os.Build.MODEL);
+                info.setServiceType("_ludoremote._tcp.");
+                info.setPort(8765);
+
+                remoteRegistrationListener =
+                        new android.net.nsd.NsdManager.RegistrationListener() {
+                    public void onServiceRegistered(android.net.nsd.NsdServiceInfo i) {
+                        android.util.Log.i("LudoRemote", "Service registered");
+                    }
+                    public void onRegistrationFailed(android.net.nsd.NsdServiceInfo i, int e) {
+                        android.util.Log.e("LudoRemote", "Registration failed: " + e);
+                    }
+                    public void onServiceUnregistered(android.net.nsd.NsdServiceInfo i) {}
+                    public void onUnregistrationFailed(android.net.nsd.NsdServiceInfo i, int e) {}
+                };
+                remoteNsdManager.registerService(
+                        info, android.net.nsd.NsdManager.PROTOCOL_DNS_SD,
+                        remoteRegistrationListener);
+            } catch (Exception e) {
+                android.util.Log.e("LudoRemote", "Discovery registration error", e);
+            }
+        }
+
         private void stopRemoteServer() {
+            try {
+                if (remoteNsdManager != null && remoteRegistrationListener != null)
+                    remoteNsdManager.unregisterService(remoteRegistrationListener);
+            } catch (Exception ignored) {}
             try {
                 if (remoteServerSocket != null) remoteServerSocket.close();
             } catch (Exception ignored) {}
