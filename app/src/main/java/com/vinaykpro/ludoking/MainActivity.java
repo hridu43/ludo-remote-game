@@ -117,6 +117,119 @@ public class MainActivity extends AppCompatActivity {
     static boolean isDiceMovableExtraChance = false;
     Dice d;
 
+
+
+        private java.net.ServerSocket remoteServerSocket;
+        private Thread remoteServerThread;
+
+        private void startRemoteServer() {
+            if (remoteServerThread != null && remoteServerThread.isAlive()) return;
+
+            remoteServerThread = new Thread(() -> {
+                try {
+                    remoteServerSocket = new java.net.ServerSocket(8765);
+                    String ip = "IP_NOT_FOUND";
+                    try {
+                        java.util.Enumeration<java.net.NetworkInterface> nets =
+                            java.net.NetworkInterface.getNetworkInterfaces();
+                        while (nets.hasMoreElements()) {
+                            java.net.NetworkInterface net = nets.nextElement();
+                            java.util.Enumeration<java.net.InetAddress> addresses =
+                                net.getInetAddresses();
+                            while (addresses.hasMoreElements()) {
+                                java.net.InetAddress a = addresses.nextElement();
+                                if (a instanceof java.net.Inet4Address && !a.isLoopbackAddress()) {
+                                    ip = a.getHostAddress();
+                                    break;
+                                }
+                            }
+                            if (!ip.equals("IP_NOT_FOUND")) break;
+                        }
+                    } catch (Exception ignored) {}
+
+                    final String address = ip;
+                    runOnUiThread(() -> Toast.makeText(
+                        MainActivity.this, "Remote: http://" + address + ":8765",
+                        Toast.LENGTH_LONG).show());
+
+                    while (!remoteServerSocket.isClosed()) {
+                        java.net.Socket client = remoteServerSocket.accept();
+                        new Thread(() -> handleRemoteClient(client)).start();
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("RemoteControl", "Server error", e);
+                }
+            });
+            remoteServerThread.start();
+        }
+
+        private void handleRemoteClient(java.net.Socket client) {
+            try {
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(client.getInputStream()));
+                String request = reader.readLine();
+                String line;
+                while ((line = reader.readLine()) != null && !line.isEmpty()) {}
+
+                String body;
+                String type;
+
+                if (request != null && request.startsWith("GET /cmd?")) {
+                    String path = request.split(" ")[1];
+                    String query = path.substring(path.indexOf("?") + 1);
+                    String command = "";
+                    int index = 0;
+
+                    for (String part : query.split("&")) {
+                        String[] pair = part.split("=", 2);
+                        if (pair.length == 2) {
+                            if (pair[0].equals("cmd")) command = pair[1];
+                            if (pair[0].equals("index")) index = Integer.parseInt(pair[1]);
+                        }
+                    }
+
+                    final int pieceIndex = index;
+                    if (command.equals("roll")) {
+                        runOnUiThread(() -> {
+                            if (d != null && !d.isRolling && d.isDiceClickable) {
+                                d.roll();
+                            }
+                        });
+                    } else if (command.equals("move")) {
+                        runOnUiThread(() -> {
+                            List<Piece> pieces = getPiecesByColor(currentPlayerColor);
+                            if (pieces != null && pieceIndex >= 0 && pieceIndex < pieces.size()) {
+                                pieces.get(pieceIndex).onClickForBot();
+                            }
+                        });
+                    }
+
+                    body = "Command sent";
+                    type = "text/plain";
+                } else {
+                    body = "<!doctype html><html><meta name='viewport' content='width=device-width,initial-scale=1'><meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;background:#172554;color:white;padding:20px'><h2>Ludo Remote</h2><button style='width:90%;padding:22px;margin:10px;font-size:24px' onclick=\"send('roll')\">ROLL DICE</button><br><button style='padding:18px;margin:7px' onclick=\"send('move&index=0')\">গুটি ১</button><button style='padding:18px;margin:7px' onclick=\"send('move&index=1')\">গুটি ২</button><br><button style='padding:18px;margin:7px' onclick=\"send('move&index=2')\">গুটি ৩</button><button style='padding:18px;margin:7px' onclick=\"send('move&index=3')\">গুটি ৪</button><p id='status'>Connected</p><script>function send(c){fetch('/cmd?cmd='+c).then(r=>r.text()).then(t=>document.getElementById('status').innerText=t).catch(e=>document.getElementById('status').innerText='Connection error')}</script></body></html>";
+                    type = "text/html; charset=utf-8";
+                }
+
+                byte[] data = body.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                java.io.OutputStream out = client.getOutputStream();
+                out.write(("HTTP/1.1 200 OK\r\nContent-Type: " + type +
+                    "\r\nContent-Length: " + data.length +
+                    "\r\nConnection: close\r\n\r\n").getBytes("UTF-8"));
+                out.write(data);
+                out.flush();
+            } catch (Exception e) {
+                android.util.Log.e("RemoteControl", "Client error", e);
+            } finally {
+                try { client.close(); } catch (Exception ignored) {}
+            }
+        }
+
+        private void stopRemoteServer() {
+            try {
+                if (remoteServerSocket != null) remoteServerSocket.close();
+            } catch (Exception ignored) {}
+        }
     MediaPlayer gameStartSound,diceRollSound,stepSound,safeSound,deathSound,pantaSound,congratulationSound;
     int sizeOfBox;
 
@@ -2316,6 +2429,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        stopRemoteServer();
         super.onDestroy();
     }
 
