@@ -1986,29 +1986,28 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void addRemoteControllerButton() {
-        ConstraintLayout root = findViewById(R.id.root);
-        if (root == null) return;
+        android.widget.FrameLayout decor =
+                (android.widget.FrameLayout) getWindow().getDecorView();
 
         android.widget.Button button = new android.widget.Button(this);
         button.setText("🎮 Controller Mode");
         button.setTextColor(android.graphics.Color.WHITE);
         button.setTextSize(14);
         button.setAllCaps(false);
-        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                android.graphics.Color.rgb(18, 75, 165)));
+        button.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(
+                        android.graphics.Color.rgb(18, 75, 165)));
 
-        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
-        lp.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        android.widget.FrameLayout.LayoutParams lp =
+                new android.widget.FrameLayout.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                        android.view.Gravity.TOP | android.view.Gravity.END);
         lp.topMargin = (int)(190 * getResources().getDisplayMetrics().density);
-        lp.rightMargin = (int)(12 * getResources().getDisplayMetrics().density);
+        lp.rightMargin = (int)(10 * getResources().getDisplayMetrics().density);
 
-        root.addView(button, lp);
-        button.setElevation(1000f);
-        button.bringToFront();
-
+        decor.addView(button, lp);
+        button.setElevation(10000f);
         button.setOnClickListener(v -> startActivity(
                 new Intent(HomeActivity.this, ControllerActivity.class)));
     }
