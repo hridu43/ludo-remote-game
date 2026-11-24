@@ -2295,6 +2295,7 @@ public class MainActivity extends AppCompatActivity {
             mainDiceImageView.setVisibility(GONE);
             hintArrow.setVisibility(GONE);
             d = new Dice(mainDiceImageView, nop, color);
+                        startRemoteServer();
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(((int)(pxWidth*0.4)),((int)(pxWidth*0.4)));
         redHomeBlink.setLayoutParams(lp);
         lp.addRule(RelativeLayout.ALIGN_TOP,R.id.imageView); lp.addRule(RelativeLayout.ALIGN_LEFT,R.id.imageView);
