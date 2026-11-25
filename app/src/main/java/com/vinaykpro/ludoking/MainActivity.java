@@ -204,9 +204,7 @@ public class MainActivity extends AppCompatActivity {
                                     && selectedPlayer < 4
                                     && selectedValue >= 1 && selectedValue <= 6) {
                                 remoteDiceOverrides[selectedPlayer] = selectedValue;
-                                Toast.makeText(MainActivity.this,
-                                    "Player " + (selectedPlayer + 1) + " next dice: " + selectedValue,
-                                    Toast.LENGTH_SHORT).show();
+
                             }
                         });
                     }
