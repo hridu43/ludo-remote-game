@@ -1,28 +1,22 @@
+
 package com.vinaykpro.ludoking;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Locale;
 
 public class ControllerActivity extends Activity {
@@ -41,7 +35,6 @@ public class ControllerActivity extends Activity {
     private boolean discovering;
     private boolean resolving;
     private boolean destroyed;
-
     private Runnable retryRunnable;
 
     @Override
@@ -55,7 +48,8 @@ public class ControllerActivity extends Activity {
                         .getSystemService(Context.WIFI_SERVICE);
 
         if (wifiManager != null) {
-            multicastLock = wifiManager.createMulticastLock("LudoControllerLock");
+            multicastLock =
+                    wifiManager.createMulticastLock("LudoControllerLock");
             multicastLock.setReferenceCounted(false);
             multicastLock.acquire();
         }
@@ -69,7 +63,6 @@ public class ControllerActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(24, 24, 24, 24);
         root.setGravity(Gravity.CENTER_HORIZONTAL);
-
         root.setBackgroundColor(0xFF101827);
 
         TextView title = new TextView(this);
@@ -94,6 +87,7 @@ public class ControllerActivity extends Activity {
         root.addView(searchButton);
 
         ScrollView scrollView = new ScrollView(this);
+
         LinearLayout playersLayout = new LinearLayout(this);
         playersLayout.setOrientation(LinearLayout.VERTICAL);
         playersLayout.setPadding(0, 20, 0, 0);
@@ -102,8 +96,12 @@ public class ControllerActivity extends Activity {
                 "PLAYER 1", "PLAYER 2", "PLAYER 3", "PLAYER 4"
         };
 
+        // Game-এর আসল রঙের ক্রম
         int[] playerColors = {
-                0xFFE53935, 0xFF43A047, 0xFFFFCA28, 0xFF1E88E5
+                0xFF1E88E5,
+                0xFFE53935,
+                0xFF43A047,
+                0xFFFFCA28
         };
 
         for (int player = 0; player < 4; player++) {
@@ -164,7 +162,6 @@ public class ControllerActivity extends Activity {
         resolving = false;
 
         statusText.setText("গেমিং ডিভাইস স্ক্যানিং...");
-
         stopDiscovery();
 
         try {
@@ -197,13 +194,15 @@ public class ControllerActivity extends Activity {
                 }
 
                 @Override
-                public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+                public void onStartDiscoveryFailed(
+                        String serviceType, int errorCode) {
                     discovering = false;
                     scheduleRetry();
                 }
 
                 @Override
-                public void onStopDiscoveryFailed(String serviceType, int errorCode) {
+                public void onStopDiscoveryFailed(
+                        String serviceType, int errorCode) {
                     discovering = false;
                     scheduleRetry();
                 }
@@ -245,18 +244,14 @@ public class ControllerActivity extends Activity {
                         public void onServiceResolved(NsdServiceInfo info) {
                             if (destroyed) return;
 
-                            if (info.getHost() != null) {
-                                hostAddress = info.getHost().getHostAddress();
+                            if (info.getHost() != null && info.getPort() > 0) {
+                                hostAddress =
+                                        info.getHost().getHostAddress();
 
-                                if (info.getPort() > 0) {
-                                    statusText.setText(
-                                            "🟢 গেম ফোন কানেক্টেড\n" + hostAddress
-                                    );
-                                    cancelRetry();
-                                } else {
-                                    hostAddress = null;
-                                    scheduleRetry();
-                                }
+                                statusText.setText(
+                                        "🟢 গেম ফোন কানেক্টেড\n" + hostAddress
+                                );
+                                cancelRetry();
                             } else {
                                 hostAddress = null;
                                 scheduleRetry();
@@ -274,7 +269,9 @@ public class ControllerActivity extends Activity {
 
     private void sendDiceCommand(int player, int dice) {
         if (hostAddress == null) {
-            statusText.setText("গেম ফোন এখনো পাওয়া যায়নি। খোঁজা হচ্ছে...");
+            statusText.setText(
+                    "গেম ফোন এখনো পাওয়া যায়নি। খোঁজা হচ্ছে..."
+            );
             startDiscovery();
             return;
         }
@@ -282,7 +279,8 @@ public class ControllerActivity extends Activity {
         final String targetHost = hostAddress;
 
         statusText.setText(
-                "Player " + (player + 1) + " এর জন্য " + dice + " পাঠানো হচ্ছে..."
+                "Player " + (player + 1)
+                        + " এর জন্য " + dice + " পাঠানো হচ্ছে..."
         );
 
         new Thread(() -> {
@@ -310,18 +308,22 @@ public class ControllerActivity extends Activity {
                     if (responseCode == 200) {
                         statusText.setText(
                                 "🟢 Player " + (player + 1)
-                                        + " এর পরের চালের জন্য " + dice
-                                        + " সেট হয়েছে"
+                                        + " এর পরের চালের জন্য "
+                                        + dice + " সেট হয়েছে"
                         );
                     } else {
-                        statusText.setText("কমান্ড পাঠানো যায়নি। আবার চেষ্টা করো।");
+                        statusText.setText(
+                                "কমান্ড পাঠানো যায়নি। আবার চেষ্টা করো।"
+                        );
                     }
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     hostAddress = null;
-                    statusText.setText("কানেকশন হারিয়েছে। আবার খোঁজা হচ্ছে...");
+                    statusText.setText(
+                            "কানেকশন হারিয়েছে। আবার খোঁজা হচ্ছে..."
+                    );
                     startDiscovery();
                 });
             } finally {
@@ -356,7 +358,8 @@ public class ControllerActivity extends Activity {
     }
 
     private void stopDiscovery() {
-        if (nsdManager != null && discoveryListener != null && discovering) {
+        if (nsdManager != null &&
+                discoveryListener != null && discovering) {
             try {
                 nsdManager.stopServiceDiscovery(discoveryListener);
             } catch (Exception ignored) {
