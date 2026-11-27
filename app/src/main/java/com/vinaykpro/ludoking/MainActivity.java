@@ -392,24 +392,24 @@ public class MainActivity extends AppCompatActivity {
             this.pieceIcon = pieceIcon;
             this.pieceStandIcon = pieceStandIcon;
             this.pieceStandIcon.setVisibility(View.VISIBLE);
-            int standColor;
             switch (this.colour) {
-                case "red": standColor = android.graphics.Color.parseColor("#E53935"); break;
-                case "green": standColor = android.graphics.Color.parseColor("#43A047"); break;
-                case "blue": standColor = android.graphics.Color.parseColor("#1E88E5"); break;
-                case "yellow": standColor = android.graphics.Color.parseColor("#FFCA28"); break;
-                default: standColor = android.graphics.Color.WHITE;
+                case "red":
+                    this.pieceStandIcon.setImageResource(R.drawable.red_circle_shaded);
+                    break;
+                case "green":
+                    this.pieceStandIcon.setImageResource(R.drawable.green_circle_shaded);
+                    break;
+                case "blue":
+                    this.pieceStandIcon.setImageResource(R.drawable.blue_circle_shaded);
+                    break;
+                case "yellow":
+                    this.pieceStandIcon.setImageResource(R.drawable.yellow_circle_shaded);
+                    break;
             }
-            android.graphics.drawable.GradientDrawable standCircle =
-                    new android.graphics.drawable.GradientDrawable();
-            standCircle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-            standCircle.setColor(standColor);
-            this.pieceStandIcon.setImageDrawable(null);
-            this.pieceStandIcon.setBackground(standCircle);
+            this.pieceStandIcon.setBackground(null);
             this.pieceStandIcon.setTranslationY(
                     4f * MainActivity.this.getResources().getDisplayMetrics().density);
-            this.pieceStandIcon.setTranslationZ(
-                    2f * MainActivity.this.getResources().getDisplayMetrics().density);
+            this.pieceStandIcon.setTranslationZ(0f);
             this.startPosition = startPosition;
             this.defX = defX;
             this.defY = defY;
