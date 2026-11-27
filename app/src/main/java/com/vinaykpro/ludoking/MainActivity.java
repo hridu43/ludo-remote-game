@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     static int[] remoteDiceOverrides = {0,0,0,0};
 
     int currentPlayerIndex = 0;
+    int consecutiveSixes = 0;
 
     String currentPlayerName;
 
@@ -390,6 +391,17 @@ public class MainActivity extends AppCompatActivity {
             this.readyToPick = readyToPick;
             this.pieceIcon = pieceIcon;
             this.pieceStandIcon = pieceStandIcon;
+            this.pieceStandIcon.setVisibility(View.VISIBLE);
+            int standColor;
+            switch (this.colour) {
+                case "red": standColor = android.graphics.Color.parseColor("#E53935"); break;
+                case "green": standColor = android.graphics.Color.parseColor("#43A047"); break;
+                case "blue": standColor = android.graphics.Color.parseColor("#1E88E5"); break;
+                case "yellow": standColor = android.graphics.Color.parseColor("#FFCA28"); break;
+                default: standColor = android.graphics.Color.WHITE;
+            }
+            this.pieceStandIcon.setImageTintList(
+                    android.content.res.ColorStateList.valueOf(standColor));
             this.startPosition = startPosition;
             this.defX = defX;
             this.defY = defY;
@@ -418,11 +430,14 @@ public class MainActivity extends AppCompatActivity {
                         makeAlive();
                     }
                 });
+                pieceIcon.setOnClickListener(view -> piece.performClick());
+                pieceStandIcon.setOnClickListener(view -> piece.performClick());
+                readyToPick.setOnClickListener(view -> piece.performClick());
             }
             if(!normalPiece) {
                 pieceIcon.setScaleX(0.8f);pieceIcon.setScaleY(0.8f);
                 pieceIcon.setImageDrawable(getStylishIconDrawableByColor(this.colour));
-                pieceStandIcon.setVisibility(GONE);
+                pieceStandIcon.setVisibility(View.VISIBLE);
                 ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) readyToPick.getLayoutParams();
                 params.topMargin = 0;
                 params.topToTop = pieceIcon.getId();
@@ -1444,6 +1459,18 @@ public class MainActivity extends AppCompatActivity {
                     ch = remoteDiceOverrides[activePlayerIndex];
                     remoteDiceOverrides[activePlayerIndex] = 0;
                 }
+
+                if (ch == 6) {
+                    if (consecutiveSixes >= 2) {
+                        ch = (int) (Math.random() * 5) + 1;
+                        consecutiveSixes = 0;
+                    } else {
+                        consecutiveSixes++;
+                    }
+                } else {
+                    consecutiveSixes = 0;
+                }
+
                 switch (ch) {
                     case 1:
                         mainDiceImageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.dice1, null));
@@ -2641,6 +2668,7 @@ public class MainActivity extends AppCompatActivity {
 
     void switchPlayers()
     {
+        consecutiveSixes = 0;
         Player currentPlayer = players.get(currentPlayerIndex);
         currentPlayerPosition = currentPlayer.getPosition();
         currentPlayerColor = currentPlayer.getColor();
