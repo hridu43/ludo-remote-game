@@ -400,8 +400,16 @@ public class MainActivity extends AppCompatActivity {
                 case "yellow": standColor = android.graphics.Color.parseColor("#FFCA28"); break;
                 default: standColor = android.graphics.Color.WHITE;
             }
-            this.pieceStandIcon.setImageTintList(
-                    android.content.res.ColorStateList.valueOf(standColor));
+            android.graphics.drawable.GradientDrawable standCircle =
+                    new android.graphics.drawable.GradientDrawable();
+            standCircle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            standCircle.setColor(standColor);
+            this.pieceStandIcon.setImageDrawable(null);
+            this.pieceStandIcon.setBackground(standCircle);
+            this.pieceStandIcon.setTranslationY(
+                    4f * MainActivity.this.getResources().getDisplayMetrics().density);
+            this.pieceStandIcon.setTranslationZ(
+                    2f * MainActivity.this.getResources().getDisplayMetrics().density);
             this.startPosition = startPosition;
             this.defX = defX;
             this.defY = defY;
