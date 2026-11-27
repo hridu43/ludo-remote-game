@@ -22,6 +22,8 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -392,23 +394,46 @@ public class MainActivity extends AppCompatActivity {
             this.pieceIcon = pieceIcon;
             this.pieceStandIcon = pieceStandIcon;
             this.pieceStandIcon.setVisibility(View.VISIBLE);
+            float ringDensity = MainActivity.this.getResources().getDisplayMetrics().density;
+            int ringColor;
+            int ringShadowColor;
             switch (this.colour) {
                 case "red":
-                    this.pieceStandIcon.setImageResource(R.drawable.red_circle_shaded);
+                    ringColor = 0xFFE51C2A;
+                    ringShadowColor = 0xFF650811;
                     break;
                 case "green":
-                    this.pieceStandIcon.setImageResource(R.drawable.green_circle_shaded);
+                    ringColor = 0xFF08A64A;
+                    ringShadowColor = 0xFF034D25;
                     break;
                 case "blue":
-                    this.pieceStandIcon.setImageResource(R.drawable.blue_circle_shaded);
+                    ringColor = 0xFF20A9E0;
+                    ringShadowColor = 0xFF064B70;
                     break;
-                case "yellow":
-                    this.pieceStandIcon.setImageResource(R.drawable.yellow_circle_shaded);
+                default:
+                    ringColor = 0xFFFFD600;
+                    ringShadowColor = 0xFF705B00;
                     break;
             }
+
+            GradientDrawable outerPieceRing = new GradientDrawable();
+            outerPieceRing.setShape(GradientDrawable.OVAL);
+            outerPieceRing.setColor(android.graphics.Color.TRANSPARENT);
+            outerPieceRing.setStroke(Math.round(4f * ringDensity), ringShadowColor);
+
+            GradientDrawable innerPieceRing = new GradientDrawable();
+            innerPieceRing.setShape(GradientDrawable.OVAL);
+            innerPieceRing.setColor(android.graphics.Color.TRANSPARENT);
+            innerPieceRing.setStroke(Math.round(3f * ringDensity), ringColor);
+
+            LayerDrawable pieceRing = new LayerDrawable(
+                    new Drawable[]{outerPieceRing, innerPieceRing});
+            int ringInset = Math.round(2f * ringDensity);
+            pieceRing.setLayerInset(1, ringInset, ringInset, ringInset, ringInset);
+
+            this.pieceStandIcon.setImageDrawable(pieceRing);
             this.pieceStandIcon.setBackground(null);
-            this.pieceStandIcon.setTranslationY(
-                    4f * MainActivity.this.getResources().getDisplayMetrics().density);
+            this.pieceStandIcon.setTranslationY(4f * ringDensity);
             this.pieceStandIcon.setTranslationZ(0f);
             this.startPosition = startPosition;
             this.defX = defX;
